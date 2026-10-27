@@ -1,0 +1,38 @@
+﻿@model Movie
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<section class="hero small" style="--hero-img:url('@Model.PosterUrl()')">
+    <div class="hero-content">
+        <div class="eyebrow">Movie spotlight</div>
+        <h1>@Model.Name</h1>
+        <div class="meta">
+            <span class="rating">★ @Model.Rating() / 10</span>
+            <span>@Model.ShowDateTime.Year</span><span>·</span><span>@Model.Category?.Name</span>
+        </div>
+        <a class="btn btn-primary" asp-area="Customer" asp-controller="Booking" asp-action="Create"
+           asp-route-movieId="@Model.Id">Book tickets ↗</a>
+        <a class="btn btn-secondary ms-2" asp-action="Index">← All movies</a>
+    </div>
+</section>
+
+<div class="d-layout">
+    <section>
+        <h2 class="section-title">Movie information</h2>
+        <div class="info-card">
+            <div class="info-row"><span>Release date</span><strong>@Model.ShowDateTime.ToString("dd MMM yyyy")</strong></div>
+            <div class="info-row"><span>Category</span><strong>@Model.Category?.Name</strong></div>
+            <div class="info-row"><span>Cinema</span><strong>@Model.Cinema?.Name</strong></div>
+            <div class="info-row"><span>Ticket price</span><strong>@Model.Price.ToString("0.##")</strong></div>
+            <div class="info-row"><span>Rating</span><strong>★ @Model.Rating() / 10</strong></div>
+        </div>
+    </section>
+
+    <aside class="booking-box">
+        <h2>Book your tickets</h2>
+        <p>@Model.Cinema?.Name · @Model.ShowDateTime.ToString("dd MMM yyyy, hh:mm tt")</p>
+        <a class="btn btn-primary w-100" asp-area="Customer" asp-controller="Booking" asp-action="Create"
+           asp-route-movieId="@Model.Id">Continue to booking</a>
+    </aside>
+</div>

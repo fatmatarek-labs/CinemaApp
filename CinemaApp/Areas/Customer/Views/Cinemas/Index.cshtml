@@ -1,0 +1,21 @@
+﻿@model List<Cinema>
+@{
+    ViewData["Title"] = "Cinemas";
+}
+
+<main>
+    <div class="section-head">
+        <h2>Cinemas</h2>
+        <p>Choose a cinema to see what's showing there.</p>
+    </div>
+
+    <div class="cat-grid">
+        @foreach (var c in Model)
+        {
+            <a class="info-card cat-card" asp-action="Details" asp-route-id="@c.Id">
+                <h3>🏢 @c.Name</h3>
+                <span>See movies →</span>
+            </a>
+        }
+    </div>
+</main>

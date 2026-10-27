@@ -1,0 +1,22 @@
+﻿@model List<Category>
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<main>
+    <div class="section-head">
+        <h2>Categories</h2>
+        <p>Pick a category to see its movies.</p>
+    </div>
+
+    <div class="cat-grid">
+        @foreach (var c in Model)
+        {
+            <a class="info-card cat-card" asp-controller="Home" asp-action="Index"
+               asp-route-categoryId="@c.Id" asp-fragment="movies">
+                <h3>@c.Name</h3>
+                <span>View movies →</span>
+            </a>
+        }
+    </div>
+</main>

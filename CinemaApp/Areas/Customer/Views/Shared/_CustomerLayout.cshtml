@@ -1,0 +1,41 @@
+﻿@{
+    var current = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Fatoma's Cinema</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/cineverse.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="topnav">
+        <a class="logo" asp-area="Customer" asp-controller="Home" asp-action="Index">Fatoma's <span>Cinema</span></a>
+
+        <nav class="navlinks">
+            <a class="@(current == "Home" ? "active" : "")" asp-area="Customer" asp-controller="Home" asp-action="Index">Dashboard</a>
+            <a asp-area="Customer" asp-controller="Home" asp-action="Index" asp-fragment="movies">Movies</a>
+            <a class="@(current == "Categories" ? "active" : "")" asp-area="Customer" asp-controller="Categories" asp-action="Index">Categories</a>
+            <a class="@(current == "Cinemas" ? "active" : "")" asp-area="Customer" asp-controller="Cinemas" asp-action="Index">Cinemas</a>
+            <a class="@(current == "Actors" ? "active" : "")" asp-area="Customer" asp-controller="Actors" asp-action="Index">Actors</a>
+            <a class="@(current == "Booking" ? "active" : "")" asp-area="Customer" asp-controller="Booking" asp-action="Create">Bookings</a>
+        </nav>
+
+        <form method="get" asp-area="Customer" asp-controller="Home" asp-action="Index" asp-fragment="movies">
+            <input class="search" name="search" placeholder="Search movies..." />
+        </form>
+    </header>
+
+    @RenderBody()
+
+    <footer class="footer">
+        <span>&copy; @DateTime.Now.Year Fatoma's Cinema</span>
+        <span>Book your next movie night</span>
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

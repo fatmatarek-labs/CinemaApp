@@ -1,0 +1,73 @@
+﻿@model List<Movie>
+@{
+    ViewData["Title"] = "Discover Movies";
+    var featured = Model.FirstOrDefault();
+    var categories = (List<Category>)ViewBag.Categories;
+    int? selected = ViewBag.CategoryId;
+    string? search = ViewBag.Search;
+}
+
+<section class="hero" style="--hero-img:url('@(featured?.PosterUrl())')">
+    <div class="hero-content">
+        <div class="eyebrow">Featured this week</div>
+        <h1>Every story<br />starts here.</h1>
+        <p>Find your next big-screen obsession. Explore crowd favorites and plan your next cinema night.</p>
+        @if (featured != null)
+        {
+            <div class="meta">
+                <span class="rating">★ @featured.Rating()</span>
+                <span>@featured.Category?.Name</span><span>·</span><span>@featured.ShowDateTime.Year</span>
+            </div>
+            <a class="btn btn-primary" asp-action="Details" asp-route-id="@featured.Id">Explore featured film ↗</a>
+        }
+        <a class="btn btn-secondary ms-2" href="#movies">Browse movies</a>
+    </div>
+</section>
+
+<main id="movies">
+    <div class="section-head">
+        <h2>Now Showing</h2>
+        <p>Hand-picked movies for your next night out.</p>
+    </div>
+
+    <form method="get" asp-action="Index" class="search-bar">
+        <input type="text" name="search" value="@search" placeholder="Search movies by title..." />
+        @if (selected != null)
+        {
+            <input type="hidden" name="categoryId" value="@selected" />
+        }
+        <button type="submit">Search</button>
+        @if (!string.IsNullOrWhiteSpace(search))
+        {
+            <a asp-action="Index" asp-route-categoryId="@selected">Clear</a>
+        }
+    </form>
+
+    <div class="filters">
+        <a class="chip @(selected == null ? "active" : "")" asp-action="Index" asp-route-search="@search">All movies</a>
+        @foreach (var c in categories)
+        {
+            <a class="chip @(selected == c.Id ? "active" : "")" asp-action="Index" asp-route-categoryId="@c.Id" asp-route-search="@search">@c.Name</a>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <p class="empty">No movies match that search. Try another title or genre.</p>
+    }
+
+    <div class="movie-grid">
+        @foreach (var m in Model)
+        {
+            <a class="movie" asp-action="Details" asp-route-id="@m.Id">
+                <div class="poster">
+                    <img loading="lazy" src="@m.PosterUrl()" alt="@m.Name poster" />
+                    <span class="tag">@m.Category?.Name</span>
+                    <span class="poster-rating">★ @m.Rating()</span>
+                </div>
+                <h3>@m.Name</h3>
+                <div class="sub">@m.ShowDateTime.Year · @m.Price.ToString("0.##")</div>
+            </a>
+        }
+    </div>
+</main>

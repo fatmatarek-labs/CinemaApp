@@ -1,0 +1,100 @@
+﻿@model CinemaDashboard.ViewModels.DashboardViewModel
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Fatoma's Cinema</title>
+
+    <script src="~/Falcon/js/config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="~/Falcon/css/theme.css" />
+    <link rel="stylesheet" href="~/Falcon/css/user.css" />
+</head>
+
+@{
+    var current = ViewContext.RouteData.Values["controller"]?.ToString();
+    var links = new[]
+    {
+        (Controller: "Home",       Text: "Dashboard",  Icon: "chart-pie"),
+        (Controller: "Movies",     Text: "Movies",     Icon: "film"),
+        (Controller: "Categories", Text: "Categories", Icon: "tags"),
+        (Controller: "Cinemas",    Text: "Cinemas",    Icon: "building"),
+        (Controller: "Actors",     Text: "Actors",     Icon: "user"),
+        (Controller: "Bookings",   Text: "Bookings",   Icon: "ticket-alt")
+    };
+}
+
+<body>
+    <main class="main" id="top">
+        <div class="container-fluid" data-layout="container">
+
+            <!-- Sidebar -->
+            <nav class="navbar navbar-light navbar-vertical navbar-expand-xl">
+                <a class="navbar-brand py-3" asp-area="Admin" asp-controller="Home" asp-action="Index">
+                    <span class="font-sans-serif">Fatoma's Cinema</span>
+                </a>
+
+                <div class="collapse navbar-collapse show" id="navbarVerticalCollapse">
+                    <ul class="navbar-nav flex-column mb-3">
+                        @foreach (var l in links)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(current == l.Controller ? "active" : "")"
+                                   asp-area="Admin" asp-controller="@l.Controller" asp-action="Index">
+                                    <span class="nav-link-icon"><span class="fas fa-@l.Icon"></span></span>
+                                    <span class="nav-link-text ps-1">@l.Text</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Page Content -->
+            <div class="content">
+                <nav class="navbar navbar-light navbar-glass navbar-top navbar-expand">
+                    <span class="navbar-brand">Cinema Dashboard</span>
+
+                    <ul class="navbar-nav navbar-nav-icons ms-auto flex-row align-items-center">
+                        <li class="nav-item">
+                            <div class="theme-control-toggle  px-2">
+                                <input class="form-check-input ms-0 theme-control-toggle-input" id="themeControlToggle" type="checkbox" data-theme-control="theme" value="dark" />
+                                <label class="mb-0 theme-control-toggle-label theme-control-toggle-light" for="themeControlToggle" title="Switch to light theme"><span class="fas fa-sun fs-0"></span></label>
+                                <label class="mb-0 theme-control-toggle-label theme-control-toggle-dark" for="themeControlToggle" title="Switch to dark theme"><span class="fas fa-moon fs-0"></span></label>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+
+                @RenderBody()
+
+                <footer class="footer text-center fs--1 mt-4 mb-3">
+                    &copy; @DateTime.Now.Year Fatoma's Cinema
+                </footer>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Falcon/js/theme.js"></script>
+    <script>
+            (function() {
+                var toggle = document.getElementById('themeControlToggle');
+                if (!toggle) return;
+
+                var saved = localStorage.getItem('theme');
+                toggle.checked = saved === 'dark';
+                document.documentElement.classList.toggle('dark', toggle.checked);
+
+                toggle.addEventListener('change', function() {
+                    document.documentElement.classList.toggle('dark', toggle.checked);
+                    localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
+                });
+            })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

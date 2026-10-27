@@ -1,0 +1,38 @@
+﻿@model CinemaDashboard.Models.Booking
+@{
+    ViewData["Title"] = "Booking confirmed";
+}
+
+<div class="card mx-auto" style="max-width:600px">
+    <div class="card-body">
+        <h2 class="mb-3">🎟️ Your booking</h2>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+
+        <div class="info-card">
+            <div class="info-row"><span>Booking number</span><strong>#@Model.Id</strong></div>
+            <div class="info-row"><span>Name</span><strong>@Model.CustomerName</strong></div>
+            <div class="info-row"><span>Phone</span><strong>@Model.Phone</strong></div>
+            <div class="info-row"><span>Movie</span><strong>@Model.Movie?.Name</strong></div>
+            <div class="info-row"><span>Tickets</span><strong>@Model.NumberOfTickets</strong></div>
+            <div class="info-row"><span>Total</span><strong>@((Model.Movie?.Price * Model.NumberOfTickets)?.ToString("0.##"))</strong></div>
+        </div>
+
+        <p class="text-muted mt-3">Save your booking number and phone to edit or cancel later.</p>
+
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id" asp-route-phone="@Model.Phone">Edit</a>
+
+            <form asp-action="Cancel" method="post" onsubmit="return confirm('Cancel this booking?')">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <input type="hidden" name="phone" value="@Model.Phone" />
+                <button type="submit" class="btn btn-outline-danger">Cancel booking</button>
+            </form>
+
+            <a class="btn btn-secondary" asp-controller="Home" asp-action="Index">Home</a>
+        </div>
+    </div>
+</div>

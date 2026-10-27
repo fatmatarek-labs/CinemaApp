@@ -1,0 +1,47 @@
+﻿@model BookingFormViewModel
+@{
+    ViewData["Title"] = "Edit Booking";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><span class="fas fa-edit me-2"></span>Edit Booking #@Model.Id</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <partial name="_BookingFields" />
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary flex-grow-1">Save changes</button>
+                        <button type="button" id="cancelBtn" class="btn btn-outline-danger">Cancel booking</button>
+                    </div>
+                </form>
+
+                <form id="cancelForm" asp-action="Cancel" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <input type="hidden" name="phone" value="@Model.Phone" />
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            Swal.fire({
+                title: 'Cancel this booking?',
+                text: 'This cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, cancel it',
+                cancelButtonText: 'Keep it'
+            }).then(r => { if (r.isConfirmed) document.getElementById('cancelForm').submit(); });
+        });
+    </script>
+}

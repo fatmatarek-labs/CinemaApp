@@ -1,0 +1,27 @@
+﻿@model BookingFormViewModel
+@{
+    ViewData["Title"] = "Book a Movie";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><span class="fas fa-ticket-alt me-2"></span>Book a Movie</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <partial name="_BookingFields" />
+                    <button class="btn btn-primary w-100">Book now</button>
+                    <div class="text-center mt-3">
+                        <a asp-action="Find">Manage my booking</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
