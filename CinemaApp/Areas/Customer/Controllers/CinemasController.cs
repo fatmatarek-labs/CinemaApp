@@ -1,30 +1,95 @@
-﻿using CinemaDashboard.Data;
+﻿using CinemaDashboard.Services;
+using CinemaDashboard.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
-namespace CinemaApp.Areas.Customer.Controllers;
+namespace CinemaApp.Areas.Admin.Controllers;
 
-[Area("Customer")]
+[Area("Admin")]
 public class CinemasController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ICinemaService _reader;
+    private readonly ICinemaManagementService _manager;
 
-    public CinemasController(ApplicationDbContext context) => _context = context;
-
-    public async Task<IActionResult> Index() =>
-        View(await _context.Cinemas.ToListAsync());
-
-    public async Task<IActionResult> Details(int id)
+    public CinemasController(ICinemaService reader, ICinemaManagementService manager)
     {
-        var cinema = await _context.Cinemas.FirstOrDefaultAsync(c => c.Id == id);
+        _reader = reader;
+        _manager = manager;
+    }
+
+    public async Task<IActionResult> Index() => View(await _reader.GetAllAsync());
+
+    public IActionResult Create() => View(new CinemaFormViewModel());
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CinemaFormViewModel vm)
+    {
+        if (vm.ImageFile == null)
+            ModelState.AddModelError(nameof(vm.ImageFile), "Image is required");
+        if (!ModelState.IsValid) return View(vm);
+
+        try
+        {
+            await _manager.CreateAsync(vm);
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError(nameof(vm.ImageFile), ex.Message);
+            return View(vm);
+        }
+
+        TempData["Success"] = "Cinema created.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    public async Task<IActionResult> Edit(int id)
+    {
+        var cinema = await _reader.GetByIdAsync(id);
         if (cinema == null) return NotFound();
 
-        ViewBag.Cinema = cinema;
-        var movies = await _context.Movies
-            .Include(m => m.Category)
-            .Where(m => m.CinemaId == id)
-            .ToListAsync();
+        return View(new CinemaFormViewModel
+        {
+            Id = cinema.Id,
+            Name = cinema.Name,
+            ExistingImg = cinema.Img
+        });
+    }
 
-        return View(movies);
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(CinemaFormViewModel vm)
+    {
+        if (!ModelState.IsValid) return View(vm);
+
+        try
+        {
+            if (!await _manager.UpdateAsync(vm)) return NotFound();
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError(nameof(vm.ImageFile), ex.Message);
+            return View(vm);
+        }
+
+        TempData["Success"] = "Cinema updated.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await _manager.DeleteAsync(id);
+
+        switch (result)
+        {
+            case DeleteResult.NotFound:
+                return NotFound();
+            case DeleteResult.InUse:
+                TempData["Error"] = "This cinema has movies, so it cannot be deleted.";
+                break;
+            default:
+                TempData["Success"] = "Cinema deleted.";
+                break;
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 }

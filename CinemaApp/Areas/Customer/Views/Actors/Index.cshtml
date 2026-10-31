@@ -1,0 +1,22 @@
+﻿@model List<CinemaDashboard.Models.Actor>
+
+<section class="container py-5">
+    <h1>Actors</h1>
+
+    @if (!Model.Any())
+    {
+        <p>No actors yet.</p>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var actor in Model)
+            {
+                <div class="col-6 col-md-3 text-center">
+                    <img src="~/images/@actor.Img" alt="@actor.Name" class="img-fluid rounded" />
+                    <h5 class="mt-2">@actor.Name</h5>
+                </div>
+            }
+        </div>
+    }
+</section>

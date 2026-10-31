@@ -1,65 +1,50 @@
-﻿using CinemaDashboard.Data;
-using CinemaDashboard.Models;
+﻿using CinemaDashboard.Services;
 using CinemaDashboard.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace CinemaApp.Areas.Customer.Controllers;
 
 [Area("Customer")]
 public class BookingController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IBookingService _bookingService;
+    private readonly IMovieService _movieService;
 
-    public BookingController(ApplicationDbContext context) => _context = context;
-
-    private void LoadMovies(int? selected = null) =>
-        ViewBag.Movies = new SelectList(_context.Movies, "Id", "Name", selected);
-
-    private Task<Booking?> FindBooking(int id, string phone) =>
-        _context.Bookings.Include(b => b.Movie)
-                .FirstOrDefaultAsync(b => b.Id == id && b.Phone == phone);
-
-    private async Task<bool> FormIsValid(BookingFormViewModel vm)
+    public BookingController(IBookingService bookingService, IMovieService movieService)
     {
-        if (ModelState.IsValid && !await _context.Movies.AnyAsync(m => m.Id == vm.MovieId))
-            ModelState.AddModelError(nameof(vm.MovieId), "This movie does not exist");
-
-        if (ModelState.IsValid) return true;
-
-        LoadMovies(vm.MovieId);
-        return false;
+        _bookingService = bookingService;
+        _movieService = movieService;
     }
 
-    public IActionResult Create(int? movieId)
+    private async Task LoadMoviesAsync(int? selected = null) =>
+        ViewBag.Movies = new SelectList(await _movieService.GetAllAsync(), "Id", "Name", selected);
+
+    public async Task<IActionResult> Create(int? movieId)
     {
-        LoadMovies(movieId);
+        await LoadMoviesAsync(movieId);
         return View(new BookingFormViewModel { MovieId = movieId ?? 0 });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(BookingFormViewModel vm)
     {
-        if (!await FormIsValid(vm)) return View(vm);
-
-        var booking = new Booking
+        if (ModelState.IsValid)
         {
-            CustomerName = vm.CustomerName,
-            Phone = vm.Phone,
-            NumberOfTickets = vm.NumberOfTickets,
-            MovieId = vm.MovieId
-        };
-        _context.Bookings.Add(booking);
-        await _context.SaveChangesAsync();
+            var result = await _bookingService.CreateAsync(vm);
+            if (result.Succeeded)
+                return RedirectToAction(nameof(Details), new { id = result.Booking!.Id });
 
-        return RedirectToAction(nameof(Details), new { id = booking.Id });
+            ModelState.AddModelError(nameof(vm.MovieId), result.Error!);
+        }
+
+        await LoadMoviesAsync(vm.MovieId);
+        return View(vm);
     }
 
     public async Task<IActionResult> Details(int id)
     {
-        var booking = await _context.Bookings.Include(b => b.Movie)
-                                    .FirstOrDefaultAsync(b => b.Id == id);
+        var booking = await _bookingService.GetByIdAsync(id);
         return booking == null ? NotFound() : View(booking);
     }
 
@@ -68,7 +53,7 @@ public class BookingController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Find(int id, string phone)
     {
-        if (await FindBooking(id, phone) == null)
+        if (await _bookingService.FindForCustomerAsync(id, phone) == null)
         {
             ViewBag.Error = "No booking matches this number and phone.";
             return View();
@@ -76,13 +61,12 @@ public class BookingController : Controller
         return RedirectToAction(nameof(Edit), new { id, phone });
     }
 
-  
     public async Task<IActionResult> Edit(int id, string phone)
     {
-        var booking = await FindBooking(id, phone);
+        var booking = await _bookingService.FindForCustomerAsync(id, phone);
         if (booking == null) return NotFound();
 
-        LoadMovies(booking.MovieId);
+        await LoadMoviesAsync(booking.MovieId);
         return View(new BookingFormViewModel
         {
             Id = booking.Id,
@@ -96,27 +80,24 @@ public class BookingController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(BookingFormViewModel vm)
     {
-        var booking = await FindBooking(vm.Id, vm.Phone);
-        if (booking == null) return NotFound();
+        if (ModelState.IsValid)
+        {
+            var result = await _bookingService.UpdateAsync(vm);
+            if (result.NotFound) return NotFound();
+            if (result.Succeeded)
+                return RedirectToAction(nameof(Details), new { id = result.Booking!.Id });
 
-        if (!await FormIsValid(vm)) return View(vm);
+            ModelState.AddModelError(nameof(vm.MovieId), result.Error!);
+        }
 
-        booking.CustomerName = vm.CustomerName;
-        booking.NumberOfTickets = vm.NumberOfTickets;
-        booking.MovieId = vm.MovieId;
-        await _context.SaveChangesAsync();
-
-        return RedirectToAction(nameof(Details), new { id = booking.Id });
+        await LoadMoviesAsync(vm.MovieId);
+        return View(vm);
     }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel(int id, string phone)
     {
-        var booking = await FindBooking(id, phone);
-        if (booking == null) return NotFound();
-
-        _context.Bookings.Remove(booking);
-        await _context.SaveChangesAsync();
+        if (!await _bookingService.CancelAsync(id, phone)) return NotFound();
 
         TempData["Success"] = "Your booking was cancelled.";
         return RedirectToAction(nameof(Find));

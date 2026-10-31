@@ -1,16 +1,14 @@
-﻿using CinemaDashboard.Data;
+﻿using CinemaDashboard.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CinemaApp.Areas.Customer.Controllers;
 
 [Area("Customer")]
 public class CategoriesController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ICategoryService _categoryService;
 
-    public CategoriesController(ApplicationDbContext context) => _context = context;
+    public CategoriesController(ICategoryService categoryService) => _categoryService = categoryService;
 
-    public async Task<IActionResult> Index() =>
-        View(await _context.Categories.ToListAsync());
+    public async Task<IActionResult> Index() => View(await _categoryService.GetAllAsync());
 }

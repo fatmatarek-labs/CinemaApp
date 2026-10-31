@@ -1,0 +1,7 @@
+﻿@model string?
+
+@if (!string.IsNullOrWhiteSpace(Model))
+{
+    var src = Model.StartsWith("http") || Model.StartsWith("/") ? Model : $"~/images/cinemas/{Model}";
+    <img src="@Url.Content(src)" alt="Cinema" class="rounded" style="height:60px" />
+}

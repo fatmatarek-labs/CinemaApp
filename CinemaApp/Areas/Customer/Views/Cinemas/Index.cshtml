@@ -1,21 +1,36 @@
-﻿@model List<Cinema>
-@{
-    ViewData["Title"] = "Cinemas";
+﻿@model List<CinemaDashboard.Models.Cinema>
+
+<h1>Cinemas</h1>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
-<main>
-    <div class="section-head">
-        <h2>Cinemas</h2>
-        <p>Choose a cinema to see what's showing there.</p>
-    </div>
+<a asp-action="Create" class="btn btn-primary mb-3">Add cinema</a>
 
-    <div class="cat-grid">
-        @foreach (var c in Model)
+<table class="table align-middle">
+    <thead>
+        <tr><th>Image</th><th>Name</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var cinema in Model)
         {
-            <a class="info-card cat-card" asp-action="Details" asp-route-id="@c.Id">
-                <h3>🏢 @c.Name</h3>
-                <span>See movies →</span>
-            </a>
+            <tr>
+                <td><partial name="_CinemaImage" model="cinema.Img" /></td>
+                <td>@cinema.Name</td>
+                <td class="d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@cinema.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@cinema.Id" method="post"
+                          onsubmit="return confirm('Delete this cinema?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
         }
-    </div>
-</main>
+    </tbody>
+</table>

@@ -1,4 +1,5 @@
 using CinemaDashboard.Data;
+using CinemaDashboard.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CinemaApp
@@ -8,6 +9,16 @@ namespace CinemaApp
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddScoped<IActorService, ActorService>();
+            builder.Services.AddScoped<IFileService, FileService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<ICinemaService, CinemaService>();
+            builder.Services.AddScoped<IMovieService, MovieService>();
+            builder.Services.AddScoped<IBookingService, BookingService>();
+            builder.Services.AddScoped<ICategoryManagementService, CategoryService>();
+            builder.Services.AddScoped<ICinemaManagementService, CinemaService>();
+            builder.Services.AddScoped<IActorManagementService, ActorService>();
+            builder.Services.AddScoped<IMovieManagementService, MovieService>();
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
